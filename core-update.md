@@ -15,14 +15,60 @@ For teams that need **full algorithmic control** over reinforcement fine-tuning.
 - **Custom data curation** — your filters, splits, and labeling.
 - **Full hyperparameter control** — reasoning effort, compute multiplier, batch size, learning rate.
 
-**Two operating modes side-by-side:**
+**Two operating modes side-by-side.** The difference is *where the grader lives and who stays in the loop*: in Path A the grader runs **inside the service** and the whole loop auto-iterates to a checkpoint; in Path B the grader is **with you** and the practitioner re-enters the cycle on **every step**.
 
-| Path A — Managed (Azure OAI RFT) | Path B — Interactive (Training API) |
-|---|---|
-| **Closed loop.** Set up once; service iterates until done. | **Open loop.** Practitioner stays in the cycle — scoring, editing, deciding. |
-| Submit `config · dataset · grader fn` once | Review · score · modify each step |
-| Service runs rollouts → grader → loss → weight update | You drive a 7-step GRPO loop; service handles GPU work |
-| Returns checkpoints | You stop, continue, or change course at every step |
+### Path A — Managed: Azure OAI RFT / managed fine-tuning
+
+> **Closed loop.** Set it up once; the service iterates until done.
+
+```mermaid
+flowchart TB
+    P["<b>Practitioner</b><br/>Submits config once"]
+    P -->|"config · dataset · grader fn"| RE
+
+    subgraph SERVICE["SERVICE"]
+        direction TB
+        RE["<b>Rollout engine</b><br/>Forward pass · samples"]
+        G["<b>Grader</b> · in service<br/>Scores completions"]
+        L["<b>Loss computation</b><br/>Reward → loss signal"]
+        W["<b>Weight update</b><br/>Backward · accum · step"]
+        RE --> G --> L --> W
+        W -->|"many gradient steps"| RE
+    end
+
+    SERVICE --> CP["Checkpoint returned"]
+
+    style G fill:#e6f4ea,stroke:#1e7e34,stroke-width:2px
+    style L fill:#fdf3e0,stroke:#b8860b
+```
+
+The grader sits **inside the service** — submit once, and rollouts → grader → loss → weight update repeat automatically until a checkpoint is returned.
+
+### Path B — Interactive: Interactive RL / Training API (sneak peek)
+
+> **Open loop.** Practitioner stays in the cycle — scoring, editing, deciding the next step.
+
+```mermaid
+flowchart TB
+    P["<b>Practitioner</b><br/>Reviews · scores · modifies"]
+    P -->|"config + scores"| RE
+
+    subgraph SERVICE["SERVICE"]
+        direction TB
+        RE["<b>Rollout engine</b><br/>Forward pass · samples"]
+        L["<b>Loss computation</b><br/>Reward → loss signal"]
+        W["<b>Weight update</b><br/>Backward · accum · step"]
+        RE -->|"rollout buffer"| L --> W
+    end
+
+    SERVICE --> G["<b>Grader</b> · with you<br/>Practitioner scores, edits, continues or stops"]
+    G -->|"every step"| P
+
+    style G fill:#e6f4ea,stroke:#1e7e34,stroke-width:2px
+    style L fill:#fdf3e0,stroke:#b8860b
+```
+
+The grader is pulled **out of the service and back to you** — after each weight update you score, edit, and decide whether to continue or stop, so you steer the run on every step.
 
 **Inside the interactive Training API:**
 
