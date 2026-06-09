@@ -114,3 +114,47 @@ The common objections:
 > Most teams that say they'll fine-tune in the next year never ship a tuned model.
 
 **Foundry's fine-tuning skill** takes you from idea → experiment → production — **so easy a PM can do it**. Production traces become datasets in one click; managed RFT closes the loop for you; interactive RL is there when you outgrow it.
+
+### Inside the `microsoft-foundry` skill: the `finetuning` sub-skill
+
+The capability ships as a sub-skill of the **`microsoft-foundry`** skill in the Azure Skills repo:
+**[github.com/microsoft/azure-skills → skills/microsoft-foundry/finetuning](https://github.com/microsoft/azure-skills/tree/main/skills/microsoft-foundry/finetuning)**
+
+It fine-tunes models on Azure AI Foundry across **three training types** and covers the full pipeline — dataset prep, training-job submission, deployment, and evaluation.
+
+**Use it for:** fine-tuning (SFT / DPO / RFT), preparing or validating training data, submitting/monitoring/diagnosing jobs, calibrating RFT graders, distillation and synthetic-data generation, large-file uploads, and deploying or evaluating a tuned model.
+**Not for:** plain model deployment (use `deploy-model`), agent creation (use `agents`), or prompt-only optimization (use `prompt-optimizer`).
+
+**Three training types — pick by what data you have:**
+
+| Type | Best for | Data needed | Volume | Supported models |
+|---|---|---|---|---|
+| **SFT** (supervised) | Teaching a new skill or output format | Input–output pairs | 50–5,000 examples | Most models |
+| **DPO** (preference) | Aligning tone, style, or safety | Chosen/rejected pairs | 500–5,000 pairs | Select models (can stack on an SFT model) |
+| **RFT** (reinforcement) | Improving verifiable reasoning | Prompts + a grading function | 200–2,000 prompts | o4-mini (GPT-5 RFT gated) |
+
+> **Decision shortcut:** Have labeled input–output pairs? → **SFT**. No pairs but can write a grader? → **RFT**. Can only rank "good" vs "bad" outputs? → **DPO**. After SFT: ship it, add **DPO** for style, or add **RFT** when reasoning needs to improve.
+
+**What the sub-skill gives you:**
+
+- **Workflows** — quickstart, full pipeline, dataset creation, iterative training, and diagnosing poor results.
+- **References** — training-type selection, hyperparameters, data formats, grader design, reward-hacking avoidance, agentic RFT with tools, deployment, training-curve reading, evaluation, vision FT, large-file uploads, and platform gotchas.
+- **Scripts** — `submit_training.py`, `monitor_training.py`, `calibrate_grader.py`, `check_training.py`, `deploy_model.py`, `evaluate_model.py`, `convert_dataset.py`, `generate_distillation_data.py`, `score_dataset.py`, `cleanup.py`, plus per-format data validators.
+
+**Operating rules baked into the skill:**
+
+1. **Baseline first** — evaluate the base model before fine-tuning.
+2. **Validate data** before submitting a job.
+3. **Calibrate RFT graders** — target a 25–50% failure rate on the base model (train–val gap ≤ 0.05).
+4. **Evaluate checkpoints** — don't blindly deploy the final one.
+5. **Measure token cost** alongside accuracy when comparing models.
+
+```mermaid
+flowchart LR
+    BL["Baseline<br/>eval base model"] --> DATA["Prepare & validate<br/>data (SFT/DPO/RFT)"]
+    DATA --> TRAIN["Submit & monitor<br/>training job"]
+    TRAIN --> CKPT["Analyze curves<br/>pick checkpoint"]
+    CKPT --> DEP["Deploy<br/>fine-tuned model"]
+    DEP --> EVAL["Evaluate<br/>quality + token cost"]
+    EVAL -->|"iterate"| DATA
+```
