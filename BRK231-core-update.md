@@ -1,4 +1,4 @@
-# BRK231 — Core Update
+# BRK231 Deploy. Observe. Learn. Reinforcement learning for production agents — Core Update
 
 > The two most important takeaways from BRK231, distilled. Full content preserved in `original_content.md`.
 
