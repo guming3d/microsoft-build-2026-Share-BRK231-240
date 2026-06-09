@@ -1,6 +1,5 @@
 # BRK231 — Deploy. Observe. Learn. Reinforcement Learning for Production Agents
 
-> Speakers: Alicia Frame (Principal Product Manager, Microsoft) · Omkar More (Partner Engineering Manager, Microsoft)
 > Session code: BRK231 · Code & assets: aka.ms/build26-BRK231 · Get started: ai.azure.com
 
 ---
@@ -11,8 +10,7 @@
 - **Fine-tuning is now the default**, not the exception: 48% of enterprise teams plan to fine-tune vs. 29% using off-the-shelf (Insight Partners 2024).
 - **Three pillars** of taking an agent to production: **Improve quality · Reduce cost · Reduce latency** — small tuned models are 10–30× cheaper per token and 3–10× faster.
 - **Two paths** in Foundry: **Distillation from agent traces** (one-click from production) → **Reinforcement fine-tuning (RFT)** when distillation hits its ceiling → **Interactive RL** for full algorithmic control.
-- **Median SFT job costs ≈ $1**; at 10M TPM a tuned smaller model saves **~$54M/year** vs. a frontier model.
-- Customers in production today: **Decagon AI, Discovery Bank, Docusign**.
+- **Median SFT job costs≈$1** at 10M TPM a tuned smaller model saves **~$54M**/year vs. a frontier model.
 
 ---
 
@@ -35,7 +33,7 @@ A small tuned model is **cheaper, faster, smarter** than a generic frontier mode
 | Pillar | What it delivers |
 |---|---|
 | **Improve quality** | Bake your tools, format, and edge cases into the weights. The model calls the right tool at the right time. |
-| **Reduce cost** | Small tuned models are **10–30× cheaper per token**. Critical because agents generate ~30× the tokens of regular chat. |
+| **Reduce cost** | Small tuned models are **10–30× cheaper per token**. Critical because agents generate ~25× the tokens of regular chat. |
 | **Reduce latency** | Smaller models stream **3–10× faster** per token. Reason with **10%** of the tokens. |
 
 ---
@@ -108,7 +106,7 @@ Generic LLM/SLM + **your data** for **your use case** → fine-tuned LLM/SLM wit
 
 ```mermaid
 flowchart LR
-    A["Production<br/>traces"] --> B["Filter & curate"] --> C["Training<br/>dataset"] --> D["Fine-tuned<br/>model"]
+    A["Production traces"] --> B["Filter & curate"] --> C["Training dataset"] --> D["Fine-tuned model"]
 ```
 
 Your production agent traces are training data hiding in plain sight — every successful tool call, every recovered failure, every accepted answer is a labeled example for the next model.
