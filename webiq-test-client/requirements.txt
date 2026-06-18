@@ -1,0 +1,5 @@
+requests>=2.31
+# Optional: only needed for Entra ID (OAuth client-credentials) auth.
+msal>=1.28
+# Optional: only needed to regenerate the findings slide deck (make_findings_ppt.py).
+python-pptx>=1.0
